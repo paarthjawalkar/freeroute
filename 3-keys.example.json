@@ -1,0 +1,37 @@
+{
+  "port": 8080,
+  "providers": [
+    {
+      "name": "gemini",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "api_key": "PASTE_YOUR_GEMINI_KEY",
+      "models": [
+        "gemini-3.5-flash",
+        "gemini-flash-latest"
+      ],
+      "priority": 1,
+      "get_key_at": "https://aistudio.google.com/apikey (free, no card)"
+    },
+    {
+      "name": "groq",
+      "base_url": "https://api.groq.com/openai/v1",
+      "api_key": "PASTE_YOUR_GROQ_KEY",
+      "models": [
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-120b"
+      ],
+      "priority": 2,
+      "get_key_at": "https://console.groq.com/keys (free, no card)"
+    },
+    {
+      "name": "openrouter",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key": "PASTE_YOUR_OPENROUTER_KEY",
+      "models": [
+        "nvidia/nemotron-3.5-lightning:free"
+      ],
+      "priority": 3,
+      "get_key_at": "https://openrouter.ai/settings/keys (free tier, no card; models ending in :free)"
+    }
+  ]
+}
