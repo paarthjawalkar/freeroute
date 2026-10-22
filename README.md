@@ -17,7 +17,7 @@ your app; three providers' caps, stacked behind a router, mostly don't.
 
 ```sh
 pkg install python
-git clone <this repo> && cd freeroute   # or just copy the 3 files over
+git clone https://github.com/paarthjawalkar/freeroute && cd freeroute
 cp keys.example.json keys.json           # then paste your keys into keys.json
 python freeroute.py                      # listening on http://localhost:8080
 ```
@@ -67,9 +67,30 @@ It is a single file with no build step.
 - 401/403 (bad key) → benched 1 hour.
 - All down → honest HTTP 502 saying what was tried and why it failed.
 - Ask for a specific model (e.g. `"qwen/qwen3.8-27b"`) and only providers
-  listing that model are tried.
-- `/status` shows health, cooldowns and per-key usage counters
+  listing that model are tried. A model nobody lists gets a clear HTTP 400.
+
+## Endpoints
+
+- `POST /v1/chat/completions` — OpenAI-format chat, non-streaming.
+- `GET /v1/models` — every configured model, plus `auto`.
+- `GET /status` — health, cooldowns and per-key usage counters
   (persisted to `state.json`).
+- `GET /health` — plain `{"status": "ok"}` liveness check.
+
+## Test failover offline (no keys needed)
+
+`mock_provider.py` fakes OpenAI-compatible providers, so you can watch
+failover work without touching real free-tier quotas:
+
+```sh
+python3 mock_provider.py 9001 ratelimit mock-a &   # always 429
+python3 mock_provider.py 9002 ok        mock-b &   # always answers
+```
+
+Point a test `keys.json` at them (base_url `http://127.0.0.1:9001` and
+`:9002`, priorities 1 and 2), start `freeroute.py`, and POST a chat request.
+The answer comes from `mock-b`, and `GET /status` shows `mock-a` benched.
+Modes: `ok`, `ratelimit`, `flaky` (429 once, then ok), `down` (never answers).
 
 ## Honest limits
 
@@ -82,8 +103,26 @@ It is a single file with no build step.
   Reselling routed access or sharing one key across users breaks
   provider terms — don't.
 
+## What FreeRoute is not
+
+Full routers like OmniRoute or LiteLLM ship dashboards, streaming, key
+pools, budgets and dozens of provider adapters. FreeRoute deliberately
+does not: it is one small file you can read end to end, for the single
+job of keeping a personal app alive on stacked free tiers. If you need
+the control panel, use those projects — they are good. If you want the
+smallest thing that does failover with zero install, this is it.
+
 ## Files
 
-- `freeroute.py` — the whole router (~250 lines, stdlib only)
+- `freeroute.py` — the whole router (~270 lines, stdlib only)
 - `keys.example.json` — provider config template
 - `mock_provider.py` — fake providers for offline failover testing
+
+## Contributing
+
+Small, friendly project — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Issues and ideas are welcome.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
